@@ -7,13 +7,13 @@ client = Client()
 class FeatureTest(TransactionTestCase):
     def setUp(self):
         ArticleType.objects.create(
-            name = '1'
+            name = 'news'
         )
         ArticleType.objects.create(
-            name = '2'
+            name = 'feature'
         )
         ArticleType.objects.create(
-            name = '3'
+            name = 'quiz'
         )
 
         Article.objects.create(
@@ -46,13 +46,13 @@ class FeatureTest(TransactionTestCase):
 class NewsTest(TransactionTestCase):
     def setUp(self):
         ArticleType.objects.create(
-            name = '1'
+            name = 'news'
         )
         ArticleType.objects.create(
-            name = '2'
+            name = 'feature'
         )
         ArticleType.objects.create(
-            name = '3'
+            name = 'quiz'
         )
         Article.objects.create(
             title = 'greaet3',

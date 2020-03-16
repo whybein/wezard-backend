@@ -10,7 +10,7 @@ from .views import (
 urlpatterns = [
     path('/news', NewsView.as_view()),
     path('/feature', FeatureView.as_view()),
-    path('/latestnews', LatestNewsView.as_view()),
-    path('/magicalfeatures', MagicalFeatureView.as_view()),
-    path('/mainslide', MainSlideView.as_view()),
+    path('/latest-news', LatestNewsView.as_view()),
+    path('/magical-features', MagicalFeatureView.as_view()),
+    path('/main-slide', MainSlideView.as_view()),
 ]
