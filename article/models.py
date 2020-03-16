@@ -1,20 +1,18 @@
-from django.db import models
+from django.db         import models
 
-class News(models.Model):
-    title      = models.CharField(max_length = 50)
-    author     = models.CharField(max_length = 50)
-    thumbnail  = models.TextField()
-    content    = models.TextField()
-    created_at = models.DateField()
-    
-    class Meta:
-        db_table = 'news'
+class ArticleType(models.Model):
+    name = models.CharField(max_length = 50)
 
-class Feature(models.Model):
-    title      = models.CharField(max_length = 50)
-    author     = models.CharField(max_length = 50)
-    content    = models.TextField()
-    created_at = models.DateField()
-    
     class Meta:
-        db_table = 'features'
+        db_table = 'article_types'
+
+class Article(models.Model):
+    title         = models.CharField(max_length = 200)
+    author        = models.CharField(max_length = 50)
+    thumbnail     = models.URLField()
+    content       = models.TextField()
+    created_at    = models.DateField()
+    article_types = models.ForeignKey('ArticleType', on_delete = models.CASCADE, null=True)
+
+    class Meta:
+        db_table = 'articles'
