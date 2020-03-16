@@ -6,6 +6,7 @@ from .models     import User
 from my_settings import SECRET_KEY
 
 from django.test import Client, TestCase
+from unittest.mock import patch, MagicMock
 
 class SignUpTest(TestCase):
 
@@ -20,9 +21,6 @@ class SignUpTest(TestCase):
             date_of_birth      = '1999-12-31',
             is_send_newsletter = True
         )
-
-    def tearDown(self):
-        User.objects.all().delete()
 
     def test_signupview_post_success(self):
         client = Client()
@@ -149,9 +147,6 @@ class SignInTest(TestCase):
 
         )
 
-    def tearDown(self):
-        User.objects.all().delete()
-
     def test_signinview_post_success(self):
         client = Client()
         user = {
@@ -243,9 +238,6 @@ class EmailCheckTest(TestCase):
             is_send_newsletter = True
         )
 
-    def tearDown(self):
-        User.objects.all().delete()
-
     def test_emailcheckview_post_success(self):
         client = Client()
         data = {
@@ -312,3 +304,59 @@ class EmailCheckTest(TestCase):
                 'message' : 'INVALID_KEYS'
             }
         )
+
+class GoogleTest(TestCase):
+
+    def setUp(self):
+        User.objects.create(
+            email      = 'mail@mail.com',
+            first_name = 'first',
+            last_name  = 'last',
+            google_id  = '12341234'
+        )
+
+    @patch('user.views.requests')
+    def test_google_signup_success(self, mocked_requests):
+        client = Client()
+        class MockedResponse:
+            def json(self):
+                return {
+                    'email'       : 'goo@gl.com',
+                    'given_name'  : 'given',
+                    'family_name' : 'family',
+                    'sub'         : '12345678'
+                }
+
+        mocked_requests.get = MagicMock(return_value = MockedResponse())
+
+        header = {'HTTP_Authorization' : '1234AAAA' }
+        response = client.post(
+            '/user/google',
+            content_type = 'applications/json',
+            **header
+        )
+
+        self.assertEqual(response.status_code, 200)
+
+    @patch('user.views.requests')
+    def test_google_signin_success(self, mocked_requests):
+        client = Client()
+        class MockedResponse:
+            def json(self):
+                return {
+                    'email'       : 'mail@mail.com',
+                    'given_name'  : 'first',
+                    'family_name' : 'last',
+                    'sub'         : '12341234'
+                }
+
+        mocked_requests.get = MagicMock(return_value = MockedResponse())
+
+        header = {'HTTP_Authorization' : '1234BBBB' }
+        response = client.post(
+            '/user/google',
+            content_type = 'applications/json',
+            **header
+        )
+
+        self.assertEqual(response.status_code, 200)

@@ -1,6 +1,7 @@
 import json
 import bcrypt
 import jwt
+import requests
 
 from .models                import User
 from my_settings            import SECRET_KEY
@@ -84,6 +85,35 @@ class SignUpEmailCheckView(View):
 
         except ValidationError:
             return JsonResponse({"message" : "INVALID_EMAIL"}, status = 400)
+
+        except KeyError:
+            return JsonResponse({"message" : "INVALID_KEYS"}, status = 400)
+
+class GoogleSignInView(View):
+    def post(self, request):
+        access_token    = request.headers['Authorization']
+        url             = 'https://oauth2.googleapis.com/tokeninfo?id_token='
+        google_response = requests.get(url+access_token)
+        idinfo          = google_response.json()
+
+        try:
+            if User.objects.filter(google_id = idinfo['sub']).exists():
+                user = User.objects.get(google_id = idinfo['sub'])
+                token = jwt.encode({"user":user.id}, SECRET_KEY['secret'], algorithm = 'HS256')
+
+                return JsonResponse({"token" : token.decode('utf-8')}, status = 200)
+
+            else:
+                user = User(
+                    email      = idinfo['email'],
+                    first_name = idinfo['given_name'],
+                    last_name  = idinfo['family_name'],
+                    google_id  = idinfo['sub']
+                )
+                user.save()
+                token = jwt.encode({"user":user.id}, SECRET_KEY['secret'], algorithm = 'HS256')
+
+                return JsonResponse({"token" : token.decode('utf-8')}, status = 200)
 
         except KeyError:
             return JsonResponse({"message" : "INVALID_KEYS"}, status = 400)
