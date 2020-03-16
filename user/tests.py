@@ -5,7 +5,7 @@ import bcrypt
 from .models     import User
 from my_settings import SECRET_KEY
 
-from django.test import TestCase, Client
+from django.test import Client, TestCase
 
 class SignUpTest(TestCase):
 
@@ -20,6 +20,9 @@ class SignUpTest(TestCase):
             date_of_birth      = '1999-12-31',
             is_send_newsletter = True
         )
+
+    def tearDown(self):
+        User.objects.all().delete()
 
     def test_signupview_post_success(self):
         client = Client()
@@ -146,6 +149,9 @@ class SignInTest(TestCase):
 
         )
 
+    def tearDown(self):
+        User.objects.all().delete()
+
     def test_signinview_post_success(self):
         client = Client()
         user = {
@@ -214,6 +220,90 @@ class SignInTest(TestCase):
             '/user/sign-in',
             json.dumps(user),
             content_type='applications/json'
+        )
+
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.json(),
+            {
+                'message' : 'INVALID_KEYS'
+            }
+        )
+
+class EmailCheckTest(TestCase):
+
+    def setUp(self):
+        User.objects.create(
+            email              = 'dupl@dupl.com',
+            password           = bcrypt.hashpw(
+                'weWe1234'.encode('utf-8'),
+                bcrypt.gensalt()).decode('utf-8'),
+            first_name         = 'sign',
+            last_name          = 'in',
+            date_of_birth      = '1999-12-31',
+            is_send_newsletter = True
+        )
+
+    def tearDown(self):
+        User.objects.all().delete()
+
+    def test_emailcheckview_post_success(self):
+        client = Client()
+        data = {
+            'email' : 'post@post.com',
+        }
+        response = client.post(
+            '/user/email-check',
+            json.dumps(data),
+            content_type = 'applications/json'
+        )
+
+        self.assertEqual(response.status_code, 200)
+
+    def test_emailcheckview_post_duplicated_email(self):
+        client = Client()
+        data = {
+            'email' : 'dupl@dupl.com',
+        }
+        response = client.post(
+            '/user/email-check',
+            json.dumps(data),
+            content_type = 'applications/json'
+        )
+
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.json(),
+            {
+                'message' : 'DUPLICATED_EMAIL'
+            }
+        )
+
+    def test_emailcheckview_post_invaild_email(self):
+        client = Client()
+        data = {
+            'email' : 'dupdup.com',
+        }
+        response = client.post(
+            '/user/email-check',
+            json.dumps(data),
+            content_type = 'applications/json'
+        )
+
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.json(),
+            {
+                'message' : 'INVALID_EMAIL'
+            }
+        )
+
+    def test_emailcheckview_post_invaild_keys(self):
+        client = Client()
+        data = {
+            'emai' : 'dupdup.com',
+        }
+        response = client.post(
+            '/user/email-check',
+            json.dumps(data),
+            content_type = 'applications/json'
         )
 
         self.assertEqual(response.status_code, 400)
