@@ -13,10 +13,8 @@ class Passport(models.Model):
         db_table = 'passports'
 
 class HouseQuestion(models.Model):
-    question         = models.CharField(max_length = 200)
-    img_back         = models.URLField(null = True)
-    img_center       = models.URLField(max_length = 2000, null = True)
-    img_center_frame = models.URLField(max_length = 2000, null = True)
+    question   = models.CharField(max_length = 200)
+    img_center = models.URLField(max_length = 2000, null = True)
 
     class Meta:
         db_table = 'house_questions'
@@ -30,7 +28,22 @@ class HouseChoice(models.Model):
         db_table = 'house_choices'
 
 class HouseResult(models.Model):
-    name = models.CharField(max_length = 50)
+    name           = models.CharField(max_length = 50)
+    img_icon       = models.TextField(null = True)
+    img_bg         = models.URLField(max_length = 2000, null = True)
+    tag_line       = models.CharField(max_length = 50, null = True)
+    intro          = models.CharField(max_length = 500, null = True)
+    share_img_icon = models.TextField(null = True)
+    share_img_bg   = models.TextField(null = True)
+    person_img_bg  = models.TextField(null = True)
+    person1_name   = models.TextField(null = True)
+    person1_img    = models.TextField(null = True)
+    person2_name   = models.TextField(null = True)
+    person2_img    = models.TextField(null = True)
+    person3_name   = models.TextField(null = True)
+    person3_img    = models.TextField(null = True)
+    message        = models.TextField(null = True)
+    quotes         = models.CharField(max_length = 200, null = True)
 
     class Meta:
         db_table = 'house_results'
