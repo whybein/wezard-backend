@@ -8,14 +8,14 @@ from django.http import JsonResponse
 def login_required(func):
 
     def wrapper(self, request, *args, **kwargs):
-        token  = request.headres.get('Authorization', None)
+        token  = request.headers.get('Authorization', None)
         secret = SECRET_KEY['secret']
 
         if token:
             try:
                 decode = jwt.decode(token, secret, algorithm = ['HS256'])
-                user_email = decode.get('email', None)
-                user = User.objects.get(email = user_email)
+                user_id = decode.get('user', None)
+                user = User.objects.get(id = user_id)
                 request.user = user
 
             except jwt.DecodeError:

@@ -64,7 +64,7 @@ class SignInView(View):
                 user = User.objects.get(email = data['email'])
 
                 if bcrypt.checkpw(data['password'].encode('utf-8'), user.password.encode('utf-8')):
-                    token = jwt.encode({"user":user.email}, SECRET_KEY['secret'], algorithm = 'HS256')
+                    token = jwt.encode({"user":user.id}, SECRET_KEY['secret'], algorithm = 'HS256')
                     return JsonResponse({"token" : token.decode('utf-8')}, status = 200)
 
                 return JsonResponse({"message" : "NO_MATCHING_INFO"}, status = 401)
@@ -81,7 +81,7 @@ class SignUpEmailCheckView(View):
             validate_email(data['email'])
             if User.objects.filter(email = data['email']).exists():
                 return JsonResponse({"message" : "DUPLICATED_EMAIL"}, status = 400)
-            return HttpResponse(status = 200)
+            return JsonResponse({"message" : "VALID_EMAIL"}, status = 200)
 
         except ValidationError:
             return JsonResponse({"message" : "INVALID_EMAIL"}, status = 400)
