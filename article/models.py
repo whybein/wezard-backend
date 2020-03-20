@@ -9,7 +9,7 @@ class ArticleType(models.Model):
 class Article(models.Model):
     title         = models.CharField(max_length = 200)
     author        = models.CharField(max_length = 50)
-    thumbnail     = models.URLField()
+    thumbnail     = models.TextField()
     content       = models.TextField()
     created_at    = models.DateField()
     article_types = models.ForeignKey('ArticleType', on_delete = models.CASCADE, null=True)
