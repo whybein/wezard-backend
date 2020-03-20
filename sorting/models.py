@@ -99,6 +99,15 @@ class HouseFomula(models.Model):
     class Meta:
         db_table = 'house_fomulas'
 
+class PassportHouse(models.Model):
+    house_result = models.ForeignKey(HouseResult, on_delete = models.SET_NULL, null = True)
+    img_icon     = models.URLField(max_length = 3000, null = True)
+    img_bg       = models.URLField(max_length = 2000, null = True)
+    img_profile  = models.URLField(max_length = 2000, null = True)
+
+    class Meta:
+        db_table = 'passport_houses'
+
 class WandQuestion(models.Model):
     question = models.CharField(max_length = 200)
     img_back = models.URLField(max_length = 2000, null = True)

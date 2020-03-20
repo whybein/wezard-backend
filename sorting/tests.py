@@ -1,12 +1,29 @@
 import json
+import bcrypt
+import jwt
 
-from .models     import HouseQuestion, HouseChoice, HouseResult, HouseFomula
+from my_settings import SECRET_KEY
+from user.models import User, UserHouse
+from .models     import HouseQuestion, HouseChoice, HouseResult, HouseFomula, PassportHouse
 
 from django.test import Client, TestCase
 
-class HouseQuestionTest(TestCase):
+
+class HouseTest(TestCase):
 
     def setUp(self):
+        User.objects.create(
+            id                 = 1,
+            email              = 'user@user.com',
+            password           = bcrypt.hashpw(
+                'weWe1234'.encode('utf-8'),
+                bcrypt.gensalt()).decode('utf-8'),
+            first_name         = 'user',
+            last_name          = 'user',
+            date_of_birth      = '1999-12-31',
+            is_send_newsletter = True
+        )
+
         HouseQuestion.objects.create(
             id       = 1,
             question = 'question',
@@ -26,7 +43,14 @@ class HouseQuestionTest(TestCase):
 
     def test_house_get_success(self):
         client   = Client()
-        response = client.get('/sorting/house/1')
+        user     = User.objects.get(id=1)
+        token    = jwt.encode({'user' : user.id}, SECRET_KEY['secret'], algorithm = 'HS256').decode('utf-8')
+        response = client.get(
+            '/sorting/house/1',
+            **{'HTTP_Authorization':token,
+               'content_type' : 'applications/json'
+               }
+            )
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json(),
@@ -49,8 +73,15 @@ class HouseQuestionTest(TestCase):
         )
 
     def test_house_get_invalid_keys(self):
-        client = Client()
-        response = client.get('/sorting/house/10')
+        client   = Client()
+        user     = User.objects.get(id=1)
+        token    = jwt.encode({'user' : user.id}, SECRET_KEY['secret'], algorithm = 'HS256').decode('utf-8')
+        response = client.get(
+            '/sorting/house/10',
+            **{'HTTP_Authorization':token,
+               'content_type' : 'applications/json'
+               }
+        )
 
         self.assertEqual(response.status_code, 400)
         self.assertEqual(response.json(),
@@ -59,9 +90,32 @@ class HouseQuestionTest(TestCase):
             }
         )
 
+    def test_house_get_login_required(self):
+        client   = Client()
+        response = client.get('/sorting/house/1')
+
+        self.assertEqual(response.status_code, 401)
+        self.assertEqual(response.json(),
+            {
+                'message' : 'LOGIN_REQUIRED'
+            }
+        )
+
 class HouseResultTest(TestCase):
 
     def setUp(self):
+        User.objects.create(
+            id                 = 1,
+            email              = 'user@user.com',
+            password           = bcrypt.hashpw(
+                'weWe1234'.encode('utf-8'),
+                bcrypt.gensalt()).decode('utf-8'),
+            first_name         = 'user',
+            last_name          = 'user',
+            date_of_birth      = '1999-12-31',
+            is_send_newsletter = True
+        )
+
         HouseQuestion.objects.create(
             id       = 1,
             question = 'question',
@@ -124,15 +178,20 @@ class HouseResultTest(TestCase):
         )
 
     def test_house_result_post_success(self):
-        client   = Client()
-        data = {
+        client = Client()
+        user   = User.objects.get(id=1)
+        token  = jwt.encode({'user' : user.id}, SECRET_KEY['secret'], algorithm = 'HS256').decode('utf-8')
+        data   = {
             'answer_house' : [1,3,6]
         }
         response = client.post(
             '/sorting/house/result',
             json.dumps(data),
-            content_type = 'applications/json'
+            **{'HTTP_Authorization':token,
+               'content_type' : 'applications/json'
+               }
         )
+
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json(),
             {
@@ -161,13 +220,17 @@ class HouseResultTest(TestCase):
 
     def test_house_result_port_invalid_keys_index_error(self):
         client = Client()
-        data = {
+        user   = User.objects.get(id=1)
+        token  = jwt.encode({'user' : user.id}, SECRET_KEY['secret'], algorithm = 'HS256').decode('utf-8')
+        data   = {
             'answer_house' : [3,4,6]
         }
         response = client.post(
             '/sorting/house/result',
             json.dumps(data),
-            content_type = 'applications/json'
+            **{'HTTP_Authorization':token,
+               'content_type' : 'applications/json'
+               }
         )
 
         self.assertEqual(response.status_code, 400)
@@ -179,18 +242,154 @@ class HouseResultTest(TestCase):
 
     def test_house_result_port_invalid_keys_key_error(self):
         client = Client()
-        data = {
-            'answer_hous' : [1,3,6]
+        user   = User.objects.get(id=1)
+        token  = jwt.encode({'user' : user.id}, SECRET_KEY['secret'], algorithm = 'HS256').decode('utf-8')
+        data   = {
+            'answer_hous' : [1,4,6]
         }
         response = client.post(
             '/sorting/house/result',
             json.dumps(data),
-            content_type = 'applications/json'
+            **{'HTTP_Authorization':token,
+               'content_type' : 'applications/json'
+               }
         )
 
         self.assertEqual(response.status_code, 400)
         self.assertEqual(response.json(),
             {
                 'message' : 'INVALID_KEYS'
+            }
+        )
+
+    def test_house_result_post_login_required(self):
+        client   = Client()
+        response = client.post(
+            '/sorting/house/result',
+            content_type = 'applications/json'
+        )
+
+        self.assertEqual(response.status_code, 401)
+        self.assertEqual(response.json(),
+            {
+                'message' : 'LOGIN_REQUIRED'
+            }
+        )
+
+class PssportTest(TestCase):
+
+    def setUp(self):
+        User.objects.create(
+            id                 = 1,
+            email              = 'user@user.com',
+            password           = bcrypt.hashpw(
+                'weWe1234'.encode('utf-8'),
+                bcrypt.gensalt()).decode('utf-8'),
+            first_name         = 'user',
+            last_name          = 'user',
+            date_of_birth      = '1999-12-31',
+            is_send_newsletter = True
+        )
+
+        User.objects.create(
+            id                 = 2,
+            email              = 'user2@user.com',
+            password           = bcrypt.hashpw(
+                'weWe1234'.encode('utf-8'),
+                bcrypt.gensalt()).decode('utf-8'),
+            first_name         = 'user',
+            last_name          = 'user',
+            date_of_birth      = '1999-12-31',
+            is_send_newsletter = True
+        )
+
+        HouseResult.objects.create(
+            id   = 1,
+            name = 'name'
+        )
+
+        HouseResult.objects.create(
+            id   = 5,
+            name = 'name'
+        )
+
+        UserHouse.objects.create(
+            user_id         = 1,
+            house_result_id = 1
+        )
+
+        PassportHouse.objects.create(
+            id              = 1,
+            house_result_id = 1
+        )
+
+        PassportHouse.objects.create(
+            id = 5
+        )
+
+    def test_passport_get_selected_success(self):
+        client   = Client()
+        user     = User.objects.get(id=1)
+        token    = jwt.encode({'user' : user.id}, SECRET_KEY['secret'], algorithm = 'HS256').decode('utf-8')
+        response = client.get(
+            '/sorting/passport',
+            **{'HTTP_Authorization':token,
+               'content_type' : 'applications/json'
+               }
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json(),
+            {
+                'data' : {
+                    'id' : 1,
+                    'house_result' : 1,
+                    'img_icon' : None,
+                    'img_bg' : None,
+                    'img_profile' : None
+                },
+                'user' : {
+                    'first_name' : 'user',
+                    'last_name' : 'user'
+                }
+            }
+        )
+
+    def test_passport_get_not_selected_success(self):
+        client   = Client()
+        user     = User.objects.get(id=2)
+        token    = jwt.encode({'user' : user.id}, SECRET_KEY['secret'], algorithm = 'HS256').decode('utf-8')
+        response = client.get(
+            '/sorting/passport',
+            **{'HTTP_Authorization':token,
+               'content_type' : 'applications/json'
+               }
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json(),
+            {
+                'data' : {
+                    'id' : 5,
+                    'house_result' : None,
+                    'img_icon' : None,
+                    'img_bg' : None,
+                    'img_profile' : None
+                },
+                'user' : {
+                    'first_name' : 'user',
+                    'last_name' : 'user'
+                }
+            }
+        )
+
+    def test_passport_get_login_required(self):
+        client   = Client()
+        response = client.get('/sorting/passport')
+
+        self.assertEqual(response.status_code, 401)
+        self.assertEqual(response.json(),
+            {
+                'message' : 'LOGIN_REQUIRED'
             }
         )
