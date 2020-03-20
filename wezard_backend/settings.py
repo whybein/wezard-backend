@@ -29,6 +29,7 @@ INSTALLED_APPS = [
     'user',
     'article',
     'sorting',
+    'quiz',
 ]
 
 MIDDLEWARE = [
