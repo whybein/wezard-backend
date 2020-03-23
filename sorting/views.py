@@ -9,7 +9,6 @@ from .models     import(
     PassportHouse,
 )
 
-
 from django.views        import View
 from django.http         import JsonResponse
 from django.db.models    import Q
@@ -66,8 +65,8 @@ class PassportView(View):
     @login_required
     def get(self, request):
         try:
-            if UserHouse.objects.filter(user_id = request.user.id):
-                result_id = UserHouse.objects.get(user_id = request.user.id).house_result_id
+            result_id = UserHouse.objects.get(user_id = request.user.id).house_result_id
+            if result_id:
                 return JsonResponse({
                     "data" : model_to_dict(PassportHouse.objects.get(house_result_id=result_id)),
                     "user" : {
