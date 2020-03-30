@@ -51,4 +51,4 @@
 
 # Demo
 
-![image](wezard_youtube.png)(https://youtu.be/Ly-o9a1oEkg)
+[![image](wezard_youtube.png)](https://youtu.be/Ly-o9a1oEkg)
