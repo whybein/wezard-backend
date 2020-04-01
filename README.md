@@ -49,6 +49,16 @@
 &nbsp;
 &nbsp;
 
+# API Document
+
+[Postman API](https://documenter.getpostman.com/view/10784130/SzYYzyLB)
+
+
+&nbsp;
+&nbsp;
+&nbsp;
+
+
 # Demo
 
 [![image](wezard_youtube.png)](https://youtu.be/Ly-o9a1oEkg)
